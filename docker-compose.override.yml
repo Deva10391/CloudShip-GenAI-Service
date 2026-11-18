@@ -1,0 +1,7 @@
+services:
+  app:
+    environment:
+      OLLAMA_URL: http://host.docker.internal:11434
+      RATE_PER_MIN: "100000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

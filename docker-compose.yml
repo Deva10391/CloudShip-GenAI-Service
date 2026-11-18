@@ -1,0 +1,16 @@
+services:
+  qdrant:
+    image: qdrant/qdrant
+    ports: ["6333:6333"]
+  ollama:
+    build: ./ollama
+    ports: ["11435:11434"]
+  app:
+    build: .
+    ports: ["8080:8080"]
+    volumes: ["./kb:/srv/kb"]
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      OLLAMA_URL: http://ollama:11434
+      API_KEY: dev-key
+    depends_on: [qdrant, ollama]

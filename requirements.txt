@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pydantic
+httpx
+qdrant-client[fastembed]<1.16.0
+langchain-qdrant
+langchain-community
+llama-index
+locust
