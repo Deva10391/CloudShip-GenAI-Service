@@ -2,6 +2,6 @@
 *.tfstate*
 .terraform/
 *__pycache__/
-*.csv
+results/
 kb/
 *.log

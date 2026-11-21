@@ -40,7 +40,7 @@ docker compose up -d --build                                  # qdrant + app (+ 
 docker compose exec ollama ollama pull qwen2.5:3b             # skip if you use host Ollama
 until curl -sf localhost:6333/healthz >/dev/null; do sleep 2; done
 until curl -sf localhost:8080/health >/dev/null; do sleep 2; done
-docker compose cp kb app:/srv/kb
+docker compose cp kb/. app:/srv/kb
 docker compose exec app python -m app.ingest ./kb             # runs inside the container, no host Python needed
 curl -X POST localhost:8080/query -H "x-api-key: dev-key" -H "Content-Type: application/json" -d '{"q":"How do I reset my password?"}'
 ```
@@ -65,13 +65,14 @@ If the host Ollama listens only on `127.0.0.1`, start it with `OLLAMA_HOST=0.0.0
 Raise the rate limit for the test (`RATE_PER_MIN: "100000"` under `app.environment` in the override file), then:
 ```bash
 T=$(date -u +%Y-%m-%dT%H:%M:%S)
-API_KEY=dev-key locust -f loadtest/locustfile.py --host http://localhost:8080 --headless -u 5 -r 1 -t 3m --csv=results
+mkdir -p results
+API_KEY=dev-key locust -f loadtest/locustfile.py --host http://localhost:8080 --headless -u 5 -r 1 -t 3m --csv=results/results
 docker compose logs app --no-log-prefix --since "$T" | grep '^{"src"' > q.log
 python - <<'E'
 import json,csv
 r=[json.loads(l) for l in open("q.log")]
 L=sorted(x["latency_ms"] for x in r)
-f=[row for row in csv.DictReader(open("results_stats.csv")) if row["Name"]=="Aggregated"][0]
+f=[row for row in csv.DictReader(open("results/results_stats.csv")) if row["Name"]=="Aggregated"][0]
 print("failures",f["Failure Count"],"of",f["Request Count"],"| p95 ms",L[int(.95*len(L))-1],"| cache %",round(100*sum(x["src"]=="cache" for x in r)/len(r),1))
 E
 ```
